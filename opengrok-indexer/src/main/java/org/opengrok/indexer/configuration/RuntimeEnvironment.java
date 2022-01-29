@@ -31,16 +31,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutorService;
@@ -505,9 +496,9 @@ public final class RuntimeEnvironment {
     /**
      * Get all of the groups.
      *
-     * @return a set containing all of the groups (may be null)
+     * @return a hashmap containing all of the groups (may be null)
      */
-    public Set<Group> getGroups() {
+    public HashMap<String, Group> getGroups() {
         return syncReadConfiguration(Configuration::getGroups);
     }
 
@@ -516,7 +507,7 @@ public final class RuntimeEnvironment {
      *
      * @param groups the set of groups to use
      */
-    public void setGroups(Set<Group> groups) {
+    public void setGroups(HashMap<String, Group> groups) {
         syncWriteConfiguration(groups, (c, g) -> {
             populateGroups(g, new TreeSet<>(getProjects().values()));
             c.setGroups(g);
@@ -1548,7 +1539,7 @@ public final class RuntimeEnvironment {
      * @param groups   set of groups to be filled with matching projects
      * @param projects projects to classify
      */
-    public void populateGroups(Set<Group> groups, Set<Project> projects) {
+    public void populateGroups(HashMap<String, Group> groups, Set<Project> projects) {
         if (projects == null || groups == null) {
             return;
         }
@@ -1565,7 +1556,7 @@ public final class RuntimeEnvironment {
             project.getGroups().clear();
 
             // filter projects only to groups which match project's name
-            Set<Group> copy = Group.matching(project, groups);
+            HashMap<String, Group> copy = Group.matching(project, groups);
 
             // add project to the groups
             for (Group group : copy) {

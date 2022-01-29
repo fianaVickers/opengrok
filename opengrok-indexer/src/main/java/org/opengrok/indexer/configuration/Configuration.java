@@ -130,7 +130,8 @@ public final class Configuration {
     private boolean authorizationWatchdogEnabled;
     private AuthorizationStack pluginStack;
     private Map<String, Project> projects; // project name -> Project
-    private Set<Group> groups;
+    //added this
+    private HashMap<String, Group>  groups// group name -> Group
     private String sourceRoot;
     private String dataRoot;
     /**
@@ -538,6 +539,8 @@ public final class Configuration {
         setFoldingEnabled(true);
         setGenerateHtml(true);
         setGroups(new TreeSet<>());
+        // added this
+        setGroups(new ConcurrentHashMap<>());
         setGroupsCollapseThreshold(4);
         setHandleHistoryOfRenamedFiles(false);
         setHistoryCache(true);
@@ -847,27 +850,27 @@ public final class Configuration {
     }
 
     /**
-     * Adds a group to the set. This is performed upon configuration parsing
+     * Adds a group to the Hashmap. This is performed upon configuration parsing
      *
      * @param group group
      * @throws IOException when group is not unique across the set
      */
     public void addGroup(Group group) throws IOException {
-        if (!groups.add(group)) {
+        if (!groups.add(group.name, group)) {
             throw new IOException(
                     String.format("Duplicate group name '%s' in configuration.",
                             group.getName()));
         }
     }
-
-    public Set<Group> getGroups() {
+//added this
+    public HashMap<String, Group> getGroups() {
         return groups;
     }
 
-    public void setGroups(Set<Group> groups) {
+    public void setGroups(HashMap<String, Group> groups) {
         this.groups = groups;
     }
-
+// added this
     public String getSourceRoot() {
         return sourceRoot;
     }

@@ -100,9 +100,9 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
     private boolean indexed = false;
 
     /**
-     * Set of groups which match this project.
+     * HashMap of groups which match this project.
      */
-    private transient Set<Group> groups = new TreeSet<>();
+    private transient HashMap<String, Group> groups = new TreeSet<>(); //change this to hash map
 
     /**
      * These properties override global settings, if set.
@@ -292,13 +292,13 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
     /**
      * Return groups where this project belongs.
      *
-     * @return set of groups|empty if none
+     * @return HashMap of groups|empty if none
      */
-    public Set<Group> getGroups() {
+    public HashMap<String, Group> getGroups() {
         return groups;
     }
 
-    public void setGroups(Set<Group> groups) {
+    public void setGroups(HashMap<String, Group> groups) {
         this.groups = groups;
     }
 
@@ -309,7 +309,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
      */
     public void addGroup(Group group) {
         while (group != null) {
-            this.groups.add(group);
+            this.groups.add(group.name, group);
             group = group.getParent();
         }
     }

@@ -23,6 +23,7 @@
  */
 package org.opengrok.indexer.configuration;
 
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
@@ -66,13 +67,15 @@ public class Group implements Comparable<Group>, Nameable {
      */
     private Pattern compiledPattern = Pattern.compile("()");
     private Group parent;
-    private Set<Group> subgroups = new TreeSet<>();
+    //added this
+    private HashMap<String, Group> subgroups = new TreeSet<>();
 
     private transient int flag;
-    private transient Set<Group> descendants = new TreeSet<>();
+    //added this
+    private transient HashMap<String, Group> descendants = new TreeSet<>();
     private transient Set<Project> projects = new TreeSet<>();
     private transient Set<Project> repositories = new TreeSet<>();
-    private transient Set<Group> parents;
+    private transient HashMap<String, Group> parents;
 
     /**
      * No-arg constructor is needed for deserialization.
@@ -101,27 +104,27 @@ public class Group implements Comparable<Group>, Nameable {
         this.repositories.add(p);
     }
 
-    public Set<Group> getDescendants() {
+    public HashMap<Group> getDescendants() {
         return descendants;
     }
 
-    public void setDescendants(Set<Group> descendants) {
+    public void setDescendants(HashMap<Group> descendants) {
         this.descendants = descendants;
     }
 
     public void addDescendant(Group g) {
-        this.descendants.add(g);
+        this.descendants.add(g.name, g);
     }
 
     public void removeDescendant(Group g) {
-        this.descendants.remove(g);
+        this.descendants.remove(g.name);
     }
 
     public Set<Project> getRepositories() {
         return repositories;
     }
 
-    public void setSubgroups(Set<Group> subgroups) {
+    public void setSubgroups(HashMap<String, Group> subgroups) {
         this.subgroups = subgroups;
     }
 
@@ -133,22 +136,24 @@ public class Group implements Comparable<Group>, Nameable {
         this.repositories = repositories;
     }
 
-    public Set<Group> getSubgroups() {
+    public HashMap<String, Group> getSubgroups() {
         return subgroups;
     }
 
+    //added this
     public void addGroup(Group g) {
         g.setParent(this);
-        subgroups.add(g);
-        descendants.add(g);
+        subgroups.add(g.name, g);
+        descendants.add(g.name, g);
     }
 
-    public Set<Group> getParents() {
+    //added this
+    public HashMap<Group> getParents() {
         if (parents == null) {
             parents = new TreeSet<>();
             Group tmp = parent;
             while (tmp != null) {
-                parents.add(tmp);
+                parents.add(tmp.name, tmp);
                 tmp = tmp.getParent();
             }
         }
@@ -164,8 +169,9 @@ public class Group implements Comparable<Group>, Nameable {
      *
      * @return all collected related groups to this group
      */
-    public Set<Group> getRelatedGroups() {
-        Set<Group> groupsTmp = new TreeSet<>();
+    //added this
+    public HashMap<Group> getRelatedGroups() {
+        HashMap <Group> groupsTmp = new TreeSet<>();
         groupsTmp.addAll(getDescendants());
         groupsTmp.addAll(getParents());
         return groupsTmp;
@@ -287,26 +293,29 @@ public class Group implements Comparable<Group>, Nameable {
         Group ret = null;
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         if (env.hasGroups()) {
-            for (Group grp : env.getGroups()) {
-                if (name.equals(grp.getName())) {
-                    ret = grp;
-                }
+            //added this
+            Group group;
+            if(group = env.getGroups().get(name) != null){
+                return group;
             }
         }
-        return ret;
+        return null;
     }
 
     /**
-     * Reduce the group set to only those which match the given project based on
+     * Reduce the group hashmap to only those which match the given project based on
      * the project's description.
      *
      * @param project the project
      * @param groups set of groups
      * @return set of groups matching the project
      */
-    public static Set<Group> matching(Project project, Set<Group> groups) {
-        Set<Group> copy = new TreeSet<>(groups);
+    //added this
+    public static HashMap<String, Group> matching(Project project, HashMap<String, Group> groups) {
+        HashMap<String, Group> copy = groups;
         copy.removeIf(g -> !g.match(project));
+        //copy the groupts into a hash map
+        //remove groups if group to name matches
         return copy;
     }
 }
